@@ -561,24 +561,20 @@ int main()	{
 	outfile.open("path.txt");
 	cout.setf(ios::showpoint);
 	cout.precision(3);
-	int z_pos;
+	double z_pos;
 	//Take Off
-	z_pos = LiftOff(start.x, start.y, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, outfile);
+	double accel = 0.3;
+	double n_accel = (-1)*accel;
+	z_pos = LiftOff(start.x, start.y, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, accel, 0.0, 0.0, outfile);
 	while(!visited_path.empty())	{
 		cell temp;
 		
 		temp = visited_path.top();
 		cout << temp.x << " " << temp.y << endl;
-		Move(temp.x, temp.y, z_pos, 0.0, 0.0, 0.0, 0.5, 0.5, 0.0, 0.0, 0.0, outfile);
+		Move(temp.x, temp.y, z_pos, 0.0, 0.0, 0.0, accel, accel, 0.0, 0.0, 0.0, outfile);
 		visited_path.pop();
 	}
-	Landing(end.x, end.y, z_pos, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, outfile);
+	Landing(end.x, end.y, z_pos, 0.0, 0.0, 0.0, 0.0, 0.0, n_accel, 0.0, 0.0, outfile);
 }
 
-/*
-	Movement Handling Functions
-
-
-
-*/
 
