@@ -548,14 +548,14 @@ int main()	{
 	visited_path = pathSearch(start,end,obs);
 	cout << "done searching" << endl;
 	
-	while(!visited_path.empty())	{
+/* 	while(!visited_path.empty())	{
 		cell temp;
 		
 		temp = visited_path.top();
 		cout << temp.x << " " << temp.y << endl;
 		visited_path.pop();
 		
-	}
+	} */
 	//Generate drone path
 	ofstream outfile;
 	outfile.open("path.txt");
