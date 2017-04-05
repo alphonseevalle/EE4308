@@ -11,7 +11,6 @@
 
 using namespace std;
 
-//Function Prototypes
 double LiftOff(double x_pos, double y_pos, double z_pos, double x_vel, double y_vel, double z_vel, double x_acc, double y_acc, double z_acc, double heading, double ang_vel, ofstream& outfile)	{
 	double z_pos_prev = z_pos;
 	double z_vel_prev = z_vel;
@@ -77,6 +76,11 @@ double LiftOff(double x_pos, double y_pos, double z_pos, double x_vel, double y_
 
 	}
 
+	for (int i = 0; i < 200; i++)
+	{
+		outfile << x_pos << " " << y_pos << " " << z_pos_next << " " << x_vel << " " << y_vel << " " << z_vel_next << " " << x_acc << " " << y_acc << " " << z_acc_next << " " << heading << " " << ang_vel << endl;
+	}
+
 	z_acc_next = 0.0;
 	//outfile << x_pos << " " << y_pos << " " << z_p << " " << x_vel << " " << y_vel << " " << z_v << " " << x_acc << " " << y_acc << " " << z_a << " " << heading << " " << ang_vel << endl;
 
@@ -132,19 +136,7 @@ void Landing(double x_pos, double y_pos, double z_pos, double x_vel, double y_ve
 	}
 
 	z_acc_next = 0.5;
-	/*
-	while (phase_3)
-	{
-		z_vel_next = 0.5*(z_acc_prev + z_acc_next)*0.05 + z_vel_prev;
-		z_pos_next = 0.5*(z_vel_prev + z_vel_next)*0.05 + z_pos_prev;
 
-		outfile << x_pos << " " << y_pos << " " << z_pos_next << " " << x_vel << " " << y_vel << " " << z_vel_next << " " << x_acc << " " << y_acc << " " << z_acc_next << " " << heading << " " << ang_vel << endl;
-
-		z_pos_prev = z_pos_next;
-		z_vel_prev = z_vel_next;
-		z_acc_prev = z_acc_next;
-		
-	}*/
 	for (int i = 0; i < z_count; i++)
 	{
 		z_vel_next = 0.5*(z_acc_prev + z_acc_next)*0.05 + z_vel_prev;
@@ -166,36 +158,108 @@ void Landing(double x_pos, double y_pos, double z_pos, double x_vel, double y_ve
 
 }
 
-void Move(double& x_pos, double y_pos, double z_pos, double x_vel, double y_vel, double z_vel, double x_acc, double y_acc, double z_acc, double heading, double ang_vel, ofstream& outfile)		{
-	//x-direction
-	double x_pos_prev = x_pos;
+
+
+void Move(double x_pos_1, double y_pos_1, double x_pos_2, double y_pos_2, double z_pos, ofstream& outfile)
+{
+	double diff_x = x_pos_2 - x_pos_1;
+	double diff_y = y_pos_2 - y_pos_1;
+
+	double x_target = fabs(diff_x);
+	double y_target = fabs(diff_y);
+
+	double x_pos_prev = x_pos_1;
 	double x_vel_prev = 0.0;
 	double x_acc_prev = 0.0;
-	int x_count = 0;
+	//int x_count = 0;
 
 	double x_pos_next = 0.0;
 	double x_vel_next = 0.0;
-	double x_acc_next = x_acc;
-	
-	//y-direction
-	double y_pos_prev = y_pos;
+	double x_acc_next = 0.0;
+	double x_acc_initial = 0.0;
+
+	double y_pos_prev = y_pos_1;
 	double y_vel_prev = 0.0;
 	double y_acc_prev = 0.0;
-	int y_count = 0;
+	//int y_count = 0;
 
+	int count = 0;
 	double y_pos_next = 0.0;
 	double y_vel_next = 0.0;
-	double y_acc_next = y_acc;
+	double y_acc_next = 0.0;
+	double y_acc_initial = 0.0;
 
-	
-	
-	
+	double z_vel = 0.0;
+	double z_acc = 0.0;
+	double heading = 0.0;
+	double ang_vel = 0.0;
+	bool move_in_x = false;
+	bool move_in_y = false;
+
+	if (diff_x > 0.45 && (diff_y < 0.05 && diff_y > -0.05))
+	{
+		x_acc_initial = 0.5;
+		y_acc_initial = 0.0;
+		move_in_x = true;
+		move_in_y = false;
+	}
+	else if (diff_x > 0.45 && diff_y > 0.45)
+	{
+		x_acc_initial = 0.5;
+		y_acc_initial = 0.5;
+		move_in_x = true;
+		move_in_y = true;
+	}
+	else if ((diff_x < 0.05 && diff_x > -0.05) && diff_y > 0.45)
+	{
+		x_acc_initial = 0.0;
+		y_acc_initial = 0.5;
+		move_in_x = false;
+		move_in_y = true;
+	}
+	else if (diff_x < -0.45 && diff_y > 0.45)
+	{
+		x_acc_initial = -0.5;
+		y_acc_initial = 0.5;
+		move_in_x = true;
+		move_in_y = true;
+	}
+	else if (diff_x < -0.45 && (diff_y < 0.05 && diff_y > -0.05))
+	{
+		x_acc_initial = -0.5;
+		y_acc_initial = 0.0;
+		move_in_x = true;
+		move_in_y = false;
+	}
+	else if (diff_x < -0.45 && diff_y < -0.45)
+	{
+		x_acc_initial = -0.5;
+		y_acc_initial = -0.5;
+		move_in_x = true;
+		move_in_y = true;
+	}
+	else if ((diff_x < 0.05 && diff_x > -0.05) && diff_y < -0.45)
+	{
+		x_acc_initial = 0.0;
+		y_acc_initial = -0.5;
+		move_in_x = false;
+		move_in_y = true;
+	}
+	else if (diff_x > 0.45 && diff_y < -0.45)
+	{
+		x_acc_initial = 0.5;
+		y_acc_initial = -0.5;
+		move_in_x = true;
+		move_in_y = true;
+	}
+
+	x_acc_next = x_acc_initial;
+	y_acc_next = y_acc_initial;
+
 	bool phase_1 = true;
 	bool phase_2 = true;
 	bool phase_3 = true;
-
-	outfile << x_pos_prev << " " << y_pos << " " << z_pos << " " << x_vel_prev << " " << y_vel << " " << z_vel << " " << x_acc_prev << " " << y_acc << " " << z_acc << " " << heading << " " << ang_vel << endl;
-
+	
 	while (phase_1)
 	{
 		//x-direction
@@ -206,27 +270,53 @@ void Move(double& x_pos, double y_pos, double z_pos, double x_vel, double y_vel,
 		y_vel_next = 0.5*(y_acc_prev + y_acc_next)*0.05 + y_vel_prev;
 		y_pos_next = 0.5*(y_vel_prev + y_vel_next)*0.05 + y_pos_prev;
 		
-		outfile << x_pos_next << " " << y_pos << " " << z_pos << " " << x_vel_next << " " << y_vel << " " << z_vel << " " << x_acc_next << " " << y_acc << " " << z_acc << " " << heading << " " << ang_vel << endl;
+		outfile << x_pos_next << " " << y_pos_next << " " << z_pos << " " << x_vel_next << " " << y_vel_next << " " << z_vel << " " << x_acc_next << " " << y_acc_next << " " << z_acc << " " << heading << " " << ang_vel << endl;
 
 		x_pos_prev = x_pos_next;
 		x_vel_prev = x_vel_next;
 		x_acc_prev = x_acc_next;
-		x_count++;
-		
+		//x_count++;
+		count++;
+
 		y_pos_prev = y_pos_next;
 		y_vel_prev = y_vel_next;
 		y_acc_prev = y_acc_next;
-		
-		if (x_vel_next > 0.35)
-		x_acc_next = 0.0;
-		y_acc_next = 0.0;
+		//y_count++;
+		if (move_in_x)
+		{
+			if (fabs(x_vel_next) > 0.35)
+			{
+				x_acc_next = 0.0;
+				y_acc_next = 0.0;
+			}
+		}
+		else if (move_in_y)
+		{
+			if (fabs(y_vel_next) > 0.35)
+			{
+				x_acc_next = 0.0;
+				y_acc_next = 0.0;
+			}
+		}
 
-		if (x_acc_prev < 0.01)
-		phase_1 = false;
+		if (move_in_x)
+		{
+			if (fabs(x_acc_prev) < 0.01)
+				phase_1 = false;
+		}
+		else if (move_in_y)
+		{
+			if (fabs(y_acc_prev) < 0.01)
+				phase_1 = false;
+		}
 	}
 
 	x_acc_next = 0.0;
-	double x_pos_covered = x_pos_prev-x_pos;
+	y_acc_next = 0.0;
+	double x_pos_covered = x_pos_prev - x_pos_1;
+	double y_pos_covered = y_pos_prev - y_pos_1;
+	double x_pos_curr = 0;
+	double y_pos_curr = 0;
 	
 	while (phase_2)
 	{
@@ -234,44 +324,51 @@ void Move(double& x_pos, double y_pos, double z_pos, double x_vel, double y_vel,
 		x_pos_next = 0.5*(x_vel_prev + x_vel_next)*0.05 + x_pos_prev;
 		y_pos_next = 0.5*(y_vel_prev + y_vel_next)*0.05 + y_pos_prev;
 
-		outfile << x_pos_next << " " << y_pos << " " << z_pos << " " << x_vel_next << " " << y_vel << " " << z_vel << " " << x_acc_next << " " << y_acc << " " << z_acc << " " << heading << " " << ang_vel << endl;
+		outfile << x_pos_next << " " << y_pos_next << " " << z_pos << " " << x_vel_next << " " << y_vel_next << " " << z_vel << " " << x_acc_next << " " << y_acc_next << " " << z_acc << " " << heading << " " << ang_vel << endl;
 		
 		x_pos_prev = x_pos_next;
 		y_pos_prev = y_pos_next;
+		x_pos_curr = fabs(x_pos_next - x_pos_1);
+		y_pos_curr = fabs(y_pos_next - y_pos_1);
 		
-		if (x_pos_next > x_pos + 1.0 - fabs(x_pos_covered))
-		phase_2 = false;
+		if (x_target > 0.1)
+		{
+			if (x_pos_curr > x_target - fabs(x_pos_covered))
+				phase_2 = false;
+		}
+		else if (y_target > 0.1)
+		{
+			if (y_pos_curr > y_target - fabs(y_pos_covered))
+				phase_2 = false;
+		}
 	}
 
-	x_acc_next = -0.5;
-	y_acc_next = -0.5;
-	for (int i = 0; i < x_count; i++)
+	x_acc_next = -x_acc_initial;
+	y_acc_next = -y_acc_initial;
+
+	for (int i = 0; i < count; i++)
 	{
 		x_vel_next = 0.5*(x_acc_prev + x_acc_next)*0.05 + x_vel_prev;
 		x_pos_next = 0.5*(x_vel_prev + x_vel_next)*0.05 + x_pos_prev;
 		y_vel_next = 0.5*(y_acc_prev + y_acc_next)*0.05 + y_vel_prev;
 		y_pos_next = 0.5*(y_vel_prev + y_vel_next)*0.05 + y_pos_prev;
 
-		outfile << x_pos_next << " " << y_pos << " " << z_pos << " " << x_vel_next << " " << y_vel << " " << z_vel << " " << x_acc_next << " " << y_acc << " " << z_acc << " " << heading << " " << ang_vel << endl;
+		outfile << x_pos_next << " " << y_pos_next << " " << z_pos << " " << x_vel_next << " " << y_vel_next << " " << z_vel << " " << x_acc_next << " " << y_acc_next << " " << z_acc << " " << heading << " " << ang_vel << endl;
 
 		x_pos_prev = x_pos_next;
 		x_vel_prev = x_vel_next;
 		x_acc_prev = x_acc_next;
 
-		if (i == x_count - 2)	{
+		y_pos_prev = y_pos_next;
+		y_vel_prev = y_vel_next;
+		y_acc_prev = y_acc_next;
+
+		if (i == count - 2)	{
 			x_acc_next = 0.0;
 			y_acc_next = 0.0;
 		}
 
 	}
-
-	x_acc_next = 0.0;
-	x_pos = x_pos_next;
-	y_acc_next = 0.0;
-	y_pos = y_pos_next;
-	//y_pos = y_pos_next;
-	//outfile << x_pos << " " << y_pos << " " << z_p << " " << x_vel << " " << y_vel << " " << z_v << " " << x_acc << " " << y_acc << " " << z_a << " " << heading << " " << ang_vel << endl;
-
 }
 
 struct cell	{
@@ -333,7 +430,8 @@ stack<cell> path(cell end, cell start)	{
 		tmp = current.parentPtr;
 		current = *tmp;
 	}
-	//visitedPath.push(start);
+	
+	visitedPath.push(start);
 	return visitedPath;
 }
 
@@ -375,11 +473,6 @@ stack<cell> pathSearch(cell start, cell end, vector<int> obs)	{
 	while(!open_list.empty())	{
 		cell* curr= new cell;
 		//cout << "------------------------------" << endl;
-		//Check if current cell is the end
-		/* 		if(checkGoal(curr,end))	{
-			cout << "Goal reached" << endl;
-			return path_q;
-		} */
 		
 		//Search for cell with smallest F cost
 		cell temp = open_list[0];
@@ -496,6 +589,38 @@ stack<cell> pathSearch(cell start, cell end, vector<int> obs)	{
 	
 }
 
+float getGradient(cell A, cell B)
+{
+	float grad;
+if((A.y-B.y)==0.0)
+	{
+		grad=0.0;	
+	}
+else if ((A.x-B.x)==0.0)
+		{
+			grad =100.0;	
+		}else
+			{
+				grad=(A.y-B.y)/(A.x-B.x);
+			}
+return grad;
+}
+
+bool Combine(cell A, cell B, cell C)
+{
+	bool combine=false;
+	float gradient;
+	float gradient2;
+
+	gradient=getGradient(A,B);
+	gradient2=getGradient(B,C);
+	if(gradient2==gradient)
+	{
+		combine=true; 
+	}
+ return combine;
+}
+
 int main()	{
 	
 	vector<int> obs;
@@ -532,49 +657,96 @@ int main()	{
 	start.y = 1.5;
 	end.x = 2.0;
 	end.y = 0;
-	
-	start.x = -1.5;
-	start.y = -1.5;
-	end.x = 2.0;
-	end.y = 0;
-	
-	start.x = 2.0;
-	start.y = 0;
-	end.x = -1.5;
-	end.y = -1.5;
-	
+
 	stack<cell> visited_path;
 	cout << "starting path search" << endl;
 	visited_path = pathSearch(start,end,obs);
 	cout << "done searching" << endl;
 	
-/* 	while(!visited_path.empty())	{
-		cell temp;
-		
-		temp = visited_path.top();
-		cout << temp.x << " " << temp.y << endl;
-		visited_path.pop();
-		
-	} */
 	//Generate drone path
 	ofstream outfile;
 	outfile.open("path.txt");
 	cout.setf(ios::showpoint);
 	cout.precision(3);
-	double z_pos;
+	outfile.setf(ios::showpoint);
+	outfile.setf(ios::fixed);
+	outfile.precision(3);
+	int z_pos;
+	int ind=0;
 	//Take Off
-	double accel = 0.3;
-	double n_accel = (-1)*accel;
-	z_pos = LiftOff(start.x, start.y, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, accel, 0.0, 0.0, outfile);
-	while(!visited_path.empty())	{
-		cell temp;
+	z_pos = LiftOff(start.x, start.y, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.5, 0.0, 0.0, outfile);
+	cout<<"printing coordinates"<<endl;
+	vector<cell> PathSimplified;
+	while(!visited_path.empty()){
 		
-		temp = visited_path.top();
-		cout << temp.x << " " << temp.y << endl;
-		Move(temp.x, temp.y, z_pos, 0.0, 0.0, 0.0, accel, accel, 0.0, 0.0, 0.0, outfile);
-		visited_path.pop();
+		PathSimplified.push_back(visited_path.top()); 
+		//cout << visited_path.top().x << " " << visited_path.top().y << endl;
+		visited_path.pop(); 
+		}
+
+	for (int idx = 0; idx < PathSimplified.size()-1; idx++)
+	{
+		int idx_a = idx;
+		int idx_b = idx + 1;
+		for(int i = idx_a; i < PathSimplified.size()-2; i++)	
+		{
+			if(Combine(PathSimplified[i],PathSimplified[i+1],PathSimplified[i+2]))
+			{
+				idx_b = i+2;
+			}
+			else
+				break;
+		}
+		
+		Move(PathSimplified[idx_a].x, PathSimplified[idx_a].y, PathSimplified[idx_b].x, PathSimplified[idx_b].y, z_pos, outfile);
+		cout << PathSimplified[idx_a].x << " " << PathSimplified[idx_a].y << endl;
+		idx=idx_b-1;
+	}	
+
+
+	cell start_2, end_2;
+	start_2.x = 2.0;
+	start_2.y = 0.0;
+	end_2.x = -1.5;
+	end_2.y = -1.5;
+
+	stack<cell>visited_path_2;
+	cout << "starting path search" << endl;
+	visited_path_2 = pathSearch(start_2,end_2,obs);
+	cout << "done searching" << endl;
+
+	vector<cell> PathSimplified_2;
+	while(!visited_path_2.empty()){
+		
+		PathSimplified_2.push_back(visited_path_2.top()); 
+		//cout << visited_path_2.top().x << " " << visited_path_2.top().y << endl;
+		visited_path_2.pop(); 
+
 	}
-	Landing(end.x, end.y, z_pos, 0.0, 0.0, 0.0, 0.0, 0.0, n_accel, 0.0, 0.0, outfile);
+
+	for (int idx = 0; idx < PathSimplified_2.size()-1; idx++)
+	{
+
+		int idx_a = idx;
+		int idx_b = idx + 1;
+		for(int i = idx_a; i < PathSimplified_2.size()-2; i++)	
+		{
+			if(Combine(PathSimplified_2[i],PathSimplified_2[i+1],PathSimplified_2[i+2]))
+			{
+				idx_b = i+2;
+			}
+			else
+				break;
+		}
+		
+		Move(PathSimplified_2[idx_a].x, PathSimplified_2[idx_a].y, PathSimplified_2[idx_b].x, PathSimplified_2[idx_b].y, z_pos, outfile);
+		cout << PathSimplified_2[idx_a].x << " " << PathSimplified_2[idx_a].y << endl;
+		idx=idx_b-1;
+	}	
+	
+	Landing(end_2.x, end_2.y, z_pos, 0.0, 0.0, 0.0, 0.0, 0.0, -0.5, 0.0, 0.0, outfile);
 }
+
+
 
 
